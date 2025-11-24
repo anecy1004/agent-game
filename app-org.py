@@ -11,7 +11,7 @@ import httpx
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 
 # ==================== App Config ====================
-st.set_page_config(page_title="인공지능 A조 ~(Ethical Crossroads)", page_icon="🧭", layout="centered")
+st.set_page_config(page_title="윤리적 전환 (Ethical Crossroads)", page_icon="🧭", layout="centered")
 
 # ==================== Global Timeout ====================
 HTTPX_TIMEOUT = httpx.Timeout(
@@ -591,7 +591,7 @@ if use_llm:
         client = None
 
 # ==================== Header ====================
-st.title("🧭 윤리적 전환 (Ethical Crossroads)")
+st.title("🧭 인공지능 A조 (Ethical Crossroads)")
 st.caption("본 앱은 철학적 사고실험입니다. 실존 인물·집단 언급/비방, 그래픽 묘사, 실제 위해 권장 없음.")
 
 # ==================== Game Loop ====================
