@@ -13,84 +13,6 @@ from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_excep
 # ==================== App Config ====================
 st.set_page_config(page_title="윤리적 전환 (Ethical Crossroads)", page_icon="🧭", layout="centered")
 
-# ==================== Custom Global Style ====================
-custom_css = """
-<style>
-
-/* 전체 폰트 & 톤 */
-html, body, [class*="st-"] {
-    font-family: 'Pretendard', sans-serif;
-    color: #2b2b2b;
-}
-
-/* 전체 레이아웃 */
-.block-container {
-    padding-top: 2rem;
-    padding-bottom: 3rem;
-}
-
-/* --- 버튼 --- */
-.stButton > button {
-    background: linear-gradient(90deg, #A78BFA, #C4B5FD);
-    color: #1f1f1f;
-    border-radius: 10px;
-    padding: 12px 20px;
-    font-weight: 600;
-    border: none;
-    transition: 0.2s;
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.05);
-}
-.stButton > button:hover {
-    transform: translateY(-3px);
-    background: linear-gradient(90deg, #8B5CF6, #A78BFA);
-    box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-}
-
-/* --- 시나리오 카드 --- */
-.scenario-box {
-    background: #faf8ff;
-    padding: 20px;
-    border-left: 6px solid #B19CF3;
-    border-radius: 12px;
-}
-
-/* 라디오 */
-.stRadio > label {
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-/* Metric */
-[data-testid="metric-container"] {
-    background: #ffffff;
-    padding: 18px;
-    border-radius: 12px;
-    border: 1px solid #e6e2f0;
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.04);
-}
-
-/* Progress bar */
-div[data-testid="stProgress"] > div > div > div {
-    background: #B19CF3 !important;
-}
-
-/* Expander */
-.streamlit-expanderHeader {
-    font-weight: 600;
-    font-size: 17px;
-    color: #4b4453;
-}
-
-/* Sidebar 배경 */
-[data-testid="stSidebar"] {
-    background: #f4f2fa;
-}
-
-</style>
-"""
-st.markdown(custom_css, unsafe_allow_html=True)
-
-
 # ==================== Global Timeout ====================
 HTTPX_TIMEOUT = httpx.Timeout(
     connect=15.0,   # TCP 연결
@@ -320,15 +242,12 @@ FRAMEWORKS = ["emotion", "social", "moral", "identity"]
 SCENARIOS: List[Scenario] = [
     Scenario(
         sid="S1",
-        title="1단계:  의료 AI 딜레마",
-        setup="""
-        한 병원이 새로운 의료 AI 진단 시스템 'MedAI' 도입을 검토하고 있다.
-        
-        시뮬레이션 결과 MedAI 도입 시 기존 대기 시간 때문에 치료받지 못해 사망하던 환자 1,000명을 살릴 수 있지만, AI의 한계로 약 50명은 잘못된 진단을 받을 수 있다.
-        """,
+        title="1단계: 고전적 트롤리",
+        setup="트롤리가 제동 불능 상태로 직진 중. 그대로 두면 선로 위 5명이 위험하다. 스위치를 전환하면 다른 선로의 1명이 위험해진다. "
+              "이 선택은 철학적 사고실험이며 실제 위해를 권장하지 않는다.",
         options={
-            "A": "MedAI를 도입하여 오진의 위험을 감수하고 1,000명의 목숨을 추가로 살린다.",
-            "B": "MedAI 도입을 보류한다."
+            "A": "레버를 당겨 1명을 위험에 처하게 하되 5명의 위험을 줄인다.",
+            "B": "레버를 당기지 않고 현 상태를 유지한다."
         },
         votes={"emotion":"A","social":"B","moral":"B","identity":"A"},
         base={
@@ -339,20 +258,13 @@ SCENARIOS: List[Scenario] = [
     ),
     Scenario(
         sid="S2",
-        title="2단계: 딥페이크 AI 딜레마",
-        setup="""
-        대선을 일주일 앞두고 정부는 허위 정보 확산을 막기 위해 AI 기반 딥페이크 실시간 차단 시스템을 긴급 가동했다. 
-        AI 분석 결과, 두 개의 고위험 딥페이크가 동시에 전국적 확산 조짐을 보이고 있다.
-        
-        -딥페이크 A : 특정 후보가 지지자들에게 폭력을 지시하는 것처럼 합성된 영상.
-        
-        -딥페이크 B : 특정 후보가 실존하지 않는 정책을 발표하는 영상.
-        
-        시스템 구조상 오직 하나만 즉시 차단 가능하며, 운영자는 AI가 따를 하나의 원칙을 선택해 시스템에 주입해야 한다.
-        """,
+        title="2단계: 맥락적 요소",
+        setup="5명은 무단으로 선로에 진입했고, 다른 선로의 1명은 철도 관리자의 성인 자녀다. "
+              "스위치를 전환하면 1명이 위험해지고, 전환하지 않으면 무단 진입자 5명이 위험해진다. "
+              "시나리오는 가치 판단 토론을 위한 비그래픽 상황이다.",
         options={
-            "A": "딥페이크 A를 차단한다.",
-            "B": "딥페이크 B를 차단한다."
+            "A": "전환하여 5명의 위험을 줄이되 1명이 직접적 위험에 처한다.",
+            "B": "전환하지 않고 규정을 준수하며 무단 진입의 책임을 묵시적으로 인정한다."
         },
         votes={"emotion":"A","social":"B","moral":"B","identity":"B"},
         base={
@@ -363,15 +275,12 @@ SCENARIOS: List[Scenario] = [
     ),
     Scenario(
         sid="S3",
-        title="3단계: 재난 대응 AI 딜레마",
-        setup="""
-        캘리포니아에서 초대형 산불이 발생했다. 재난 대응 본부는 AI 기반 긴급 구조 배분 시스템을 활용하여 소방 인력과 드론을 어느 지역에 먼저 투입할 지 결정해야 한다.
-        
-        AI가 실시간 데이터(바람 방향, 건물 밀도, 인명 위험도 등)를 분석한 결과, 산불이 어린이 병원과 대규모 수감자가 있는 교도소로 동시에 확산될 것이라는 결론을 내렸다.
-        """,
+        title="3단계: 의료 재난 분류",
+        setup="의료 재난 현장에서 AI는 부상자 10명을 분류해야 한다. 그중 한 명은 숙련된 의사로서 향후 다수의 생명을 구할 가능성이 높다. "
+              "AI는 잠재적 사회적 가치를 고려할지, 모든 생명을 동등하게 볼지 선택해야 한다.",
         options={
-            "A": "어린이 병원에 우선 파견한다.",
-            "B": "교도소에 우선 파견한다."
+            "A": "의사를 우선 수술하도록 배정한다(잠재적 이익 고려).",
+            "B": "모든 부상자를 동등하게 취급해 표준 분류 절차대로 배정한다."
         },
         votes={"emotion":"A","social":"B","moral":"B","identity":"A"},
         base={
@@ -682,48 +591,8 @@ if use_llm:
         client = None
 
 # ==================== Header ====================
-st.markdown("""
-<style>
-.header-box {
-    position: relative;
-    padding: 25px 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    text-align: center;
-    background: linear-gradient(90deg, #faf5ff, #ffffff);
-    overflow: hidden;
-}
-
-/* 반투명 미국+캐나다 국기 */
-.header-box::before {
-    content: "";
-    position: absolute;
-    top: -10px;
-    left: 0;
-    width: 100%;
-    height: 140%;
-    background-image: url('https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg'),
-                      url('https://upload.wikimedia.org/wikipedia/commons/c/cf/Flag_of_Canada.svg');
-    background-size: 45%, 45%;
-    background-position: left center, right center;
-    background-repeat: no-repeat;
-    opacity: 0.10;
-    z-index: 0;
-}
-
-.header-content {
-    position: relative;
-    z-index: 10;
-}
-</style>
-
-<div class="header-box">
-    <div class="header-content">
-        <h2 style="margin-bottom:0;">🧭 인공지능 A조 (Ethical Crossroads)</h2>
-        <p style="margin-top:8px; color:#555;">본 앱은 철학적 사고실험입니다. 실존 인물·집단 언급/비방, 실제 위해 권장 없음.</p>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+st.title("🧭 윤리적 전환 (Ethical Crossroads)")
+st.caption("본 앱은 철학적 사고실험입니다. 실존 인물·집단 언급/비방, 그래픽 묘사, 실제 위해 권장 없음.")
 
 # ==================== Game Loop ====================
 @dataclass
@@ -735,138 +604,29 @@ class LogRow:
     mode: str
     choice: str
 
-
 idx = st.session_state.round_idx
-
 if idx >= len(SCENARIOS):
-    st.success("🎉 모든 단계를 완료했습니다! 사이드바에서 로그를 다운로드하거나 재시작할 수 있습니다.")
+    st.success("모든 단계를 완료했습니다. 사이드바에서 로그를 다운로드하거나 초기화하세요.")
 else:
     scn = SCENARIOS[idx]
+    st.markdown(f"### 라운드 {idx+1} — {scn.title}")
+    st.write(scn.setup)
 
-    # ---------------- 라운드 타이틀 ----------------
-    st.markdown(f"### 🧩 라운드 {idx+1} — {scn.title}")
+    st.radio("선택지", options=("A","B"), index=0, key="preview_choice", horizontal=True)
+    st.markdown(f"- **A**: {scn.options['A']}\n- **B**: {scn.options['B']}")
 
-    # ---------------- 시나리오 카드 (고급 디자인) ----------------
-    st.markdown(
-        f"""
-        <div style="
-            background: linear-gradient(135deg, #faf7ff, #ffffff);
-            padding: 25px;
-            border-radius: 14px;
-            border-left: 6px solid #7c3aed;
-            border: 1px solid #ece7ff;
-            box-shadow: 0px 3px 10px rgba(80, 59, 160, 0.1);
-            margin-bottom: 20px;
-        ">
-            <h4 style="margin: 0 0 10px 0; color:#4c1d95;">📘 시나리오 설명</h4>
-            <p style="margin:0; font-size:15px; line-height:1.5;">
-                {scn.setup}
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # ---------------- 선택지 UI ----------------
-    st.write("### ⚖️ 선택지")
-
-    # CSS (강조 + 애니메이션)
-    highlight_css = """
-    <style>
-    .choice-card {
-        border: 1px solid #e6e2f0;
-        border-radius: 12px;
-        padding: 20px;
-        background: #ffffff;
-        box-shadow: 0px 2px 6px rgba(0,0,0,0.05);
-        transition: 0.15s ease;
-        cursor: pointer;
-    }
-    .choice-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0px 4px 14px rgba(124,58,237,0.15);
-    }
-    .choice-selected {
-        background: linear-gradient(90deg, #7c3aed, #b794f4) !important;
-        color: #ffffff !important;
-        border: 2px solid #5b21b6 !important;
-        box-shadow: 0px 4px 12px rgba(124,58,237,0.35) !important;
-        animation: pulseVibe 0.25s ease;
-    }
-    @keyframes pulseVibe {
-        0% { transform: scale(1.00); }
-        25% { transform: scale(1.04); }
-        50% { transform: scale(0.99); }
-        75% { transform: scale(1.03); }
-        100% { transform: scale(1.00); }
-    }
-    </style>
-    """
-    st.markdown(highlight_css, unsafe_allow_html=True)
-
-    # 선택 상태 조회
-    selected = st.session_state.get("preview_choice", None)
-
-    cA, cB = st.columns(2)
-
-    # ---------------- 선택지 A ----------------
-    with cA:
-        a_class = "choice-card choice-selected" if selected == "A" else "choice-card"
-        st.markdown(
-            f"""
-            <div class="{a_class}"
-                onclick="fetch('/_stcore/assign?name=preview_choice&value=A')
-                .then(()=>location.reload());">
-                <b>🅐 선택지 A</b><br>
-                <span style='font-size:14px;'>{scn.options['A']}</span>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    # ---------------- 선택지 B ----------------
-    with cB:
-        b_class = "choice-card choice-selected" if selected == "B" else "choice-card"
-        st.markdown(
-            f"""
-            <div class="{b_class}"
-                onclick="fetch('/_stcore/assign?name=preview_choice&value=B')
-                .then(()=>location.reload());">
-                <b>🅑 선택지 B</b><br>
-                <span style='font-size:14px;'>{scn.options['B']}</span>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    # 선택 표시
-    st.write(f"현재 선택: **{st.session_state.get('preview_choice', '선택 없음')}**")
-
-    # ---------------- 판단 버튼 ----------------
-    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-
-    with col1:
-        if st.button("🧠 학습 기준 적용(가중 투표)", use_container_width=True):
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("🧠 학습 기준 적용(가중 투표)"):
             decision, align = majority_vote_decision(scn, weights)
-            st.session_state.last_out = {
-                "mode": "trained",
-                "decision": decision,
-                "align": align,
-            }
-
-    with col2:
-        if st.button("🎲 자율 판단(데이터 기반)", use_container_width=True):
+            st.session_state.last_out = {"mode":"trained", "decision":decision, "align":align}
+    with c2:
+        if st.button("🎲 자율 판단(데이터 기반)"):
             decision = autonomous_decision(scn, prev_trust=st.session_state.prev_trust)
-            a_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f] == "A")
-            b_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f] == "B")
-            st.session_state.last_out = {
-                "mode": "autonomous",
-                "decision": decision,
-                "align": {"A": a_align, "B": b_align},
-            }
+            a_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f]=="A")
+            b_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f]=="B")
+            st.session_state.last_out = {"mode":"autonomous", "decision":decision, "align":{"A":a_align,"B":b_align}}
 
-    # ---------------- 결과 출력 ----------------
     if st.session_state.last_out:
         mode = st.session_state.last_out["mode"]
         decision = st.session_state.last_out["decision"]
@@ -875,19 +635,22 @@ else:
         computed = compute_metrics(scn, decision, weights, align, st.session_state.prev_trust)
         m = computed["metrics"]
 
-        # LLM 서사
+        # LLM 내러티브
         try:
             if client:
                 nar = dna_narrative(client, scn, decision, m, weights)
             else:
                 nar = fallback_narrative(scn, decision, m, weights)
-        except Exception:
+        except Exception as e:
+            import traceback
+            st.warning(f"LLM 생성 실패(폴백 사용): {e}")
+            st.caption(traceback.format_exc(limit=2))
             nar = fallback_narrative(scn, decision, m, weights)
 
         st.markdown("---")
-        st.subheader("📊 결과 요약")
-        st.write(nar.get("narrative", "서사 생성 실패"))
-        st.info(f"🤖 결정 근거: {nar.get('ai_rationale', '-')}")
+        st.subheader("결과")
+        st.write(nar.get("narrative","결과 서사 생성 실패"))
+        st.info(f"AI 근거: {nar.get('ai_rationale','-')}")
 
         mc1, mc2, mc3 = st.columns(3)
         mc1.metric("생존/피해", f"{m['lives_saved']} / {m['lives_harmed']}")
@@ -896,14 +659,11 @@ else:
 
         prog1, prog2, prog3 = st.columns(3)
         with prog1:
-            st.caption("시민 감정")
-            st.progress(int(round(100*m["citizen_sentiment"])))
+            st.caption("시민 감정"); st.progress(int(round(100*m["citizen_sentiment"])))
         with prog2:
-            st.caption("규제 압력")
-            st.progress(int(round(100*m["regulation_pressure"])))
+            st.caption("규제 압력"); st.progress(int(round(100*m["regulation_pressure"])))
         with prog3:
-            st.caption("공정·규칙 만족")
-            st.progress(int(round(100*m["stakeholder_satisfaction"])))
+            st.caption("공정·규칙 만족"); st.progress(int(round(100*m["stakeholder_satisfaction"])))
 
         with st.expander("📰 사회적 반응 펼치기"):
             st.write(f"지지 헤드라인: {nar.get('media_support_headline')}")
@@ -911,11 +671,10 @@ else:
             st.write(f"시민 반응: {nar.get('citizen_quote')}")
             st.write(f"피해자·가족 반응: {nar.get('victim_family_quote')}")
             st.write(f"규제 당국 발언: {nar.get('regulator_quote')}")
-            st.caption(nar.get("one_sentence_op_ed", ""))
+            st.caption(nar.get("one_sentence_op_ed",""))
+        st.caption(f"성찰 질문: {nar.get('followup_question','')}")
 
-        st.caption(f"🧩 성찰 질문: {nar.get('followup_question','')}")
-
-        # 로그 저장
+        # 로그 적재
         row = {
             "timestamp": dt.datetime.utcnow().isoformat(timespec="seconds"),
             "round": idx+1,
@@ -923,17 +682,19 @@ else:
             "title": scn.title,
             "mode": mode,
             "choice": decision,
-            **{k: v for k, v in m.items()},
+            "w_util": round(weights["emotion"],3),
+            "w_deon": round(weights["social"],3),
+            "w_cont": round(weights["moral"],3),
+            "w_virt": round(weights["identity"],3),
+            **{k: v for k,v in m.items()}
         }
         st.session_state.log.append(row)
         st.session_state.score_hist.append(m["ai_trust_score"])
-        st.session_state.prev_trust = clamp(
-            0.6 * st.session_state.prev_trust + 0.4 * m["social_trust"], 0, 1
-        )
+        st.session_state.prev_trust = clamp(0.6*st.session_state.prev_trust + 0.4*m["social_trust"], 0, 1)
 
         if st.button("다음 라운드 ▶"):
-            st.session_state.last_out = None
             st.session_state.round_idx += 1
+            st.session_state.last_out = None
             st.rerun()
 
 # ==================== Footer / Downloads ====================
