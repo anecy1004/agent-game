@@ -644,47 +644,47 @@ else:
 
     # 라운드 타이틀
     st.markdown(f"### 라운드 {idx+1} — {scn.title}")
+
+    # -------------------- 시나리오 박스 --------------------
     st.markdown(
         f"""
         <div style="
-        background:#f7f7f7;
-        border:1px solid #d4d4d4;
-        border-radius:8px;
-        padding:18px 20px;
-        margin:12px 0 20px 0;
-        line-height:1.6;
-        color:#222;
+            background:#f7f7f7;
+            border:1px solid #d4d4d4;
+            border-radius:8px;
+            padding:18px 20px;
+            margin:12px 0 20px 0;
+            line-height:1.6;
+            color:#222;
         ">
-        {scn.setup.replace('\n', '<br>')}
+            {scn.setup.replace('\n', '<br>')}
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    # ------------------------ 선택 UI ------------------------
+    # --------------------- 선택 -----------------------
     st.write("### 선택지")
 
-    # 동그란 라디오 버튼
+    # 라디오 버튼
     choice = st.radio(
         "",
         options=["A", "B"],
-        horizontal=True,
         key="preview_choice",
+        horizontal=True
     )
-
     selected = st.session_state.preview_choice
 
-    # 선택지 카드 영역
+    # --------------------- 선택지 카드 -----------------------
     cA, cB = st.columns(2)
 
-    # ----------- 선택지 A 카드 -----------
+    # 선택지 A
     with cA:
-        bg = "rgba(255, 200, 200, 0.55)" if selected == "A" else "white"
         with st.container(border=True):
             st.markdown(
                 f"""
                 <div style="
-                    background-color:{bg};
+                    background:white;
                     padding:12px;
                     border-radius:8px;
                 ">
@@ -695,14 +695,13 @@ else:
                 unsafe_allow_html=True
             )
 
-    # ----------- 선택지 B 카드 -----------
+    # 선택지 B
     with cB:
-        bg = "rgba(255, 200, 200, 0.55)" if selected == "B" else "white"
         with st.container(border=True):
             st.markdown(
                 f"""
                 <div style="
-                    background-color:{bg};
+                    background:white;
                     padding:12px;
                     border-radius:8px;
                 ">
@@ -807,6 +806,7 @@ else:
             st.session_state.last_out = None
             st.session_state.round_idx += 1
             st.rerun()
+
 
 # ==================== Footer / Downloads ====================
 st.markdown("---")
