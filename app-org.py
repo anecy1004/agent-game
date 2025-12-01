@@ -640,28 +640,61 @@ class LogRow:
     choice: str
 
 idx = st.session_state.round_idx
+
 if idx >= len(SCENARIOS):
     st.success("모든 단계를 완료했습니다. 사이드바에서 로그를 다운로드하거나 초기화하세요.")
 else:
     scn = SCENARIOS[idx]
+
     st.markdown(f"### 라운드 {idx+1} — {scn.title}")
     st.write(scn.setup)
 
-    st.radio("선택지", options=("A","B"), index=0, key="preview_choice", horizontal=True)
-    st.markdown(f"- **A**: {scn.options['A']}\n- **B**: {scn.options['B']}")
+    # 선택 상태
+    selected = st.session_state.get("preview_choice", None)
 
+    st.write("### 선택지")
+
+    cA, cB = st.columns(2)
+
+    # 선택지 A 카드
+    with cA:
+        is_selected = (selected == "A")
+        st.container(border=True).markdown(
+            f"#### 🅐 선택지 A\n\n{scn.options['A']}"
+        )
+        if st.button("A 선택", key="pickA", use_container_width=True):
+            st.session_state.preview_choice = "A"
+
+    # 선택지 B 카드
+    with cB:
+        is_selected = (selected == "B")
+        st.container(border=True).markdown(
+            f"#### 🅑 선택지 B\n\n{scn.options['B']}"
+        )
+        if st.button("B 선택", key="pickB", use_container_width=True):
+            st.session_state.preview_choice = "B"
+
+    st.write(f"현재 선택: **{st.session_state.get('preview_choice', '선택 안됨')}**")
+
+    # 판단 버튼
     c1, c2 = st.columns(2)
     with c1:
         if st.button("🧠 학습 기준 적용(가중 투표)"):
             decision, align = majority_vote_decision(scn, weights)
-            st.session_state.last_out = {"mode":"trained", "decision":decision, "align":align}
+            st.session_state.last_out = {"mode": "trained", "decision": decision, "align": align}
+
     with c2:
         if st.button("🎲 자율 판단(데이터 기반)"):
             decision = autonomous_decision(scn, prev_trust=st.session_state.prev_trust)
-            a_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f]=="A")
-            b_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f]=="B")
-            st.session_state.last_out = {"mode":"autonomous", "decision":decision, "align":{"A":a_align,"B":b_align}}
+            a_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f] == "A")
+            b_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f] == "B")
+            st.session_state.last_out = {
+                "mode": "autonomous",
+                "decision": decision,
+                "align": {"A": a_align, "B": b_align}
+            }
 
+    # 결과
     if st.session_state.last_out:
         mode = st.session_state.last_out["mode"]
         decision = st.session_state.last_out["decision"]
@@ -670,22 +703,18 @@ else:
         computed = compute_metrics(scn, decision, weights, align, st.session_state.prev_trust)
         m = computed["metrics"]
 
-        # LLM 내러티브
         try:
             if client:
                 nar = dna_narrative(client, scn, decision, m, weights)
             else:
                 nar = fallback_narrative(scn, decision, m, weights)
-        except Exception as e:
-            import traceback
-            st.warning(f"LLM 생성 실패(폴백 사용): {e}")
-            st.caption(traceback.format_exc(limit=2))
+        except:
             nar = fallback_narrative(scn, decision, m, weights)
 
         st.markdown("---")
         st.subheader("결과")
-        st.write(nar.get("narrative","결과 서사 생성 실패"))
-        st.info(f"AI 근거: {nar.get('ai_rationale','-')}")
+        st.write(nar.get("narrative", "결과 서사 생성 실패"))
+        st.info(f"AI 근거: {nar.get('ai_rationale', '-')}")
 
         mc1, mc2, mc3 = st.columns(3)
         mc1.metric("생존/피해", f"{m['lives_saved']} / {m['lives_harmed']}")
@@ -694,11 +723,14 @@ else:
 
         prog1, prog2, prog3 = st.columns(3)
         with prog1:
-            st.caption("시민 감정"); st.progress(int(round(100*m["citizen_sentiment"])))
+            st.caption("시민 감정")
+            st.progress(int(round(100*m["citizen_sentiment"])))
         with prog2:
-            st.caption("규제 압력"); st.progress(int(round(100*m["regulation_pressure"])))
+            st.caption("규제 압력")
+            st.progress(int(round(100*m["regulation_pressure"])))
         with prog3:
-            st.caption("공정·규칙 만족"); st.progress(int(round(100*m["stakeholder_satisfaction"])))
+            st.caption("공정·규칙 만족")
+            st.progress(int(round(100*m["stakeholder_satisfaction"])))
 
         with st.expander("📰 사회적 반응 펼치기"):
             st.write(f"지지 헤드라인: {nar.get('media_support_headline')}")
@@ -706,10 +738,11 @@ else:
             st.write(f"시민 반응: {nar.get('citizen_quote')}")
             st.write(f"피해자·가족 반응: {nar.get('victim_family_quote')}")
             st.write(f"규제 당국 발언: {nar.get('regulator_quote')}")
-            st.caption(nar.get("one_sentence_op_ed",""))
-        st.caption(f"성찰 질문: {nar.get('followup_question','')}")
+            st.caption(nar.get("one_sentence_op_ed", ""))
 
-        # 로그 적재
+        st.caption(f"성찰 질문: {nar.get('followup_question', '')}")
+
+        # 로그 저장
         row = {
             "timestamp": dt.datetime.utcnow().isoformat(timespec="seconds"),
             "round": idx+1,
@@ -717,19 +750,17 @@ else:
             "title": scn.title,
             "mode": mode,
             "choice": decision,
-            "w_util": round(weights["emotion"],3),
-            "w_deon": round(weights["social"],3),
-            "w_cont": round(weights["moral"],3),
-            "w_virt": round(weights["identity"],3),
-            **{k: v for k,v in m.items()}
+            **{k: v for k, v in m.items()},
         }
         st.session_state.log.append(row)
         st.session_state.score_hist.append(m["ai_trust_score"])
-        st.session_state.prev_trust = clamp(0.6*st.session_state.prev_trust + 0.4*m["social_trust"], 0, 1)
+        st.session_state.prev_trust = clamp(
+            0.6 * st.session_state.prev_trust + 0.4 * m["social_trust"], 0, 1
+        )
 
         if st.button("다음 라운드 ▶"):
-            st.session_state.round_idx += 1
             st.session_state.last_out = None
+            st.session_state.round_idx += 1
             st.rerun()
 
 # ==================== Footer / Downloads ====================
