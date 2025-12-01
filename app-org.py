@@ -712,6 +712,7 @@ else:
                 unsafe_allow_html=True
             )
 
+    st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
     st.write(f"현재 선택: **{selected if selected else '선택 안됨'}**")
 
     # ---------------- 판단 버튼 ----------------
