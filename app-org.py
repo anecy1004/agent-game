@@ -707,24 +707,26 @@ else:
 
     st.markdown("<div style='display:flex; gap:15px; margin-top:20px;'>", unsafe_allow_html=True)
     
-    col1, col2 = st.columns([1,1])
+    col1, col2 = st.columns([1, 1])
+    
     with col1:
-        st.button("🧠 학습 기준 적용(가중 투표)", use_container_width=True)
-    with col2:
-        st.button("🎲 자율 판단(데이터 기반)", use_container_width=True)
-        
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    with c1:
-        if st.button("🧠 학습 기준 적용(가중 투표)"):
+        if st.button("🧠 학습 기준 적용(가중 투표)", use_container_width=True):
             decision, align = majority_vote_decision(scn, weights)
-            st.session_state.last_out = {"mode":"trained", "decision":decision, "align":align}
-    with c2:
-        if st.button("🎲 자율 판단(데이터 기반)"):
+            st.session_state.last_out = {
+                "mode": "trained",
+                "decision": decision,
+                "align": align,
+            }
+    with col2:
+        if st.button("🎲 자율 판단(데이터 기반)", use_container_width=True):
             decision = autonomous_decision(scn, prev_trust=st.session_state.prev_trust)
-            a_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f]=="A")
-            b_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f]=="B")
-            st.session_state.last_out = {"mode":"autonomous", "decision":decision, "align":{"A":a_align,"B":b_align}}
+            a_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f] == "A")
+            b_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f] == "B")
+            st.session_state.last_out = {
+                "mode": "autonomous",
+                "decision": decision,
+                "align": {"A": a_align, "B": b_align},
+            }
 
     if st.session_state.last_out:
         mode = st.session_state.last_out["mode"]
