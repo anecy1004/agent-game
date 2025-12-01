@@ -371,7 +371,13 @@ def autonomous_decision(scn: Scenario, prev_trust: float) -> str:
     return "A" if scoreA >= scoreB else "B"
 
 def compute_metrics(scn: Scenario, choice: str, weights: Dict[str, float], align: Dict[str, float], prev_trust: float) -> Dict[str, Any]:
-    m = dict(scn.base[choice])
+    if choice in scn.base:
+        m = dict(scn.base[choice])
+    else:
+        # fallback (예: A 선택했는데 S1 base에 A-C/A-D가 아직 없음)
+        base_key = choice.split("-")[0]   # "A-C" → "A"
+        m = dict(scn.base[base_key])
+
     accept_base = scn.accept[choice]
     if scn.sid == "S4" and choice == "A":
         accept_base -= 0.15
@@ -487,6 +493,10 @@ def init_state():
     if "score_hist" not in st.session_state: st.session_state.score_hist = []
     if "prev_trust" not in st.session_state: st.session_state.prev_trust = 0.5
     if "last_out" not in st.session_state: st.session_state.last_out = None
+        
+    if "substep" not in st.session_state: st.session_state.substep = 0
+    if "step1_choice" not in st.session_state: st.session_state.step1_choice = None
+    if "step2_choice" not in st.session_state: st.session_state.step2_choice = None
 
 init_state()
 
@@ -625,6 +635,35 @@ st.markdown(
 
 st.caption("본 앱은 철학적 사고실험입니다. 실존 인물·집단 언급/비방, 실제 위해 권장 없음.")
 
+def proceed_to_next(final_choice):
+    scn = SCENARIOS[st.session_state.round_idx]
+
+    # 점수/내러티브 계산
+    align = {"A":0, "B":0}  # step2 있으면 A/B align은 step1 기반
+    decision = final_choice
+    computed = compute_metrics(scn, decision, weights, align, st.session_state.prev_trust)
+    m = computed["metrics"]
+    
+    # 로그 저장
+    row = {
+        "timestamp": dt.datetime.utcnow().isoformat(timespec="seconds"),
+        "round": st.session_state.round_idx + 1,
+        "scenario_id": scn.sid,
+        "title": scn.title,
+        "mode": "multi-step",
+        "choice": final_choice,
+        **{k: v for k, v in m.items()},
+    }
+    st.session_state.log.append(row)
+
+    # 다음 라운드 이동
+    st.session_state.round_idx += 1
+    st.session_state.substep = 0
+    st.session_state.step1_choice = None
+    st.session_state.step2_choice = None
+    st.session_state.last_out = None
+    st.rerun()
+
 # ==================== Game Loop ====================
 @dataclass
 class LogRow:
@@ -724,6 +763,31 @@ else:
     st.markdown("<div style='height:50px;'></div>", unsafe_allow_html=True)
     # ---------------- 현재 선택 표시 ----------------
     st.write(f"현재 선택: **{selected if selected else '선택 안됨'}**")
+
+    # ========== Step1 → Step2 분기 ==========
+    if idx == 0:  # 시나리오 1에서만 Step2 존재
+        # Step2 진입 여부 판단
+        if st.session_state.substep == 0:
+            # Step1 선택 버튼
+            if st.button("다음 ▶ (1단계 결정)"):
+                st.session_state.step1_choice = selected
+
+            if selected == "A":
+                # Step2로 진입
+                st.session_state.substep = 1
+            else:
+                # B 선택 → 바로 다음 시나리오로 이동
+                proceed_to_next("B")
+
+            st.rerun()
+        elif st.session_state.substep == 1:
+            st.markdown("### 추가 선택 (Step2)")
+            sub_choice = st.radio("추가 선택", ["C", "D"], key="subchoice_radio")
+            st.session_state.step2_choice = sub_choice
+            
+            if st.button("최종 결정 ▶"):
+                final_choice = f"A-{sub_choice}"
+                proceed_to_next(final_choice)
 
     # ---------------- 판단 버튼 ----------------
     c1, c2 = st.columns(2)
