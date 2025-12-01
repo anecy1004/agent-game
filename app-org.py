@@ -728,7 +728,6 @@ else:
     """, unsafe_allow_html=True)
 
    # ---------------- 선택지 카드 UI ----------------
-
 st.write("### 선택지")
 
 card_style = """
@@ -761,8 +760,7 @@ with cB:
 
 st.write(f"현재 선택: **{st.session_state.get('preview_choice', 'A')}**")
 
-
-    st.markdown("<div style='display:flex; gap:15px; margin-top:20px;'>", unsafe_allow_html=True)
+st.markdown("<div style='display:flex; gap:15px; margin-top:20px;'>", unsafe_allow_html=True)
     
     col1, col2 = st.columns([1, 1])
     
