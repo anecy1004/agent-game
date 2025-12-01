@@ -720,7 +720,8 @@ else:
                 """,
                 unsafe_allow_html=True
             )
-
+            
+    st.markdown("<div style='height:50px;'></div>", unsafe_allow_html=True)
     # ---------------- 현재 선택 표시 ----------------
     st.write(f"현재 선택: **{selected if selected else '선택 안됨'}**")
 
