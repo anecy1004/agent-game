@@ -705,7 +705,16 @@ else:
     st.radio("선택지", options=("A","B"), index=0, key="preview_choice", horizontal=True)
     st.markdown(f"- **A**: {scn.options['A']}\n- **B**: {scn.options['B']}")
 
-    c1, c2 = st.columns(2)
+    st.markdown("<div style='display:flex; gap:15px; margin-top:20px;'>", unsafe_allow_html=True)
+    
+    col1, col2 = st.columns([1,1])
+    with col1:
+        st.button("🧠 학습 기준 적용(가중 투표)", use_container_width=True)
+    with col2:
+        st.button("🎲 자율 판단(데이터 기반)", use_container_width=True)
+        
+    st.markdown("</div>", unsafe_allow_html=True)
+
     with c1:
         if st.button("🧠 학습 기준 적용(가중 투표)"):
             decision, align = majority_vote_decision(scn, weights)
