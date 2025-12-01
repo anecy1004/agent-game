@@ -13,6 +13,73 @@ from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_excep
 # ==================== App Config ====================
 st.set_page_config(page_title="윤리적 전환 (Ethical Crossroads)", page_icon="🧭", layout="centered")
 
+# ==================== Custom Global Style ====================
+custom_css = """
+<style>
+
+/* 전체 폰트 & 컬러톤 */
+html, body, [class*="st-"] {
+    font-family: 'Pretendard', sans-serif;
+    color: #222;
+}
+
+/* 카드 스타일 */
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+    border-radius: 12px;
+}
+
+/* 버튼 스타일 */
+.stButton > button {
+    background: linear-gradient(90deg, #4f46e5, #3b82f6);
+    color: white;
+    border-radius: 10px;
+    padding: 12px 20px;
+    border: none;
+    font-weight: 600;
+    transition: 0.2s;
+}
+.stButton > button:hover {
+    transform: translateY(-3px);
+    background: linear-gradient(90deg, #4338ca, #2563eb);
+}
+
+/* 라디오 버튼 */
+.stRadio > label {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+.st-at {
+    background-color: #eef2ff !important;
+    border-radius: 8px;
+    padding: 5px 10px;
+}
+
+/* Metric 박스 커스텀 */
+[data-testid="metric-container"] {
+    background: #f9fafb;
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+/* Progress Bar 색상 */
+div[data-testid="stProgress"] > div > div > div {
+    background: #6366f1;
+}
+
+/* Expander 스타일 */
+.streamlit-expanderHeader {
+    font-weight: 700;
+    font-size: 18px;
+}
+
+</style>
+"""
+st.markdown(custom_css, unsafe_allow_html=True)
+
+
 # ==================== Global Timeout ====================
 HTTPX_TIMEOUT = httpx.Timeout(
     connect=15.0,   # TCP 연결
