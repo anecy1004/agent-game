@@ -642,10 +642,19 @@ if idx >= len(SCENARIOS):
 else:
     scn = SCENARIOS[idx]
 
-    # 라운드 타이틀
+    # ---------------- 라운드 타이틀 ----------------
     st.markdown(f"### 라운드 {idx+1} — {scn.title}")
 
-    # -------------------- 시나리오 박스 --------------------
+    # ---------------- 시나리오 박스 (마지막 문장 강조) ----------------
+    scenario_html = scn.setup.replace("\n", "<br>")
+
+    # 마지막 문장만 볼드 + 폰트 확대
+    last_sentence = scenario_html.strip().split("<br>")[-1]
+    scenario_html = scenario_html.replace(
+        last_sentence,
+        f"<strong><span style='font-size:18px;'>{last_sentence}</span></strong>"
+    )
+
     st.markdown(
         f"""
         <div style="
@@ -657,16 +666,16 @@ else:
             line-height:1.6;
             color:#222;
         ">
-            {scn.setup.replace('\n', '<br>')}
+            {scenario_html}
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    # --------------------- 선택 -----------------------
+    # ---------------- 선택지 제목 ----------------
     st.write("### 선택지")
 
-    # 라디오 버튼
+    # ---------------- 라디오 버튼 (A/B 동그라미 선택 UI) ----------------
     choice = st.radio(
         "",
         options=["A", "B"],
@@ -675,44 +684,44 @@ else:
     )
     selected = st.session_state.preview_choice
 
-    # --------------------- 선택지 카드 -----------------------
+    # ---------------- 선택지 카드 UI ----------------
     cA, cB = st.columns(2)
 
-    # 선택지 A
+    # 선택지 A 카드
     with cA:
         with st.container(border=True):
             st.markdown(
                 f"""
                 <div style="
                     background:white;
-                    padding:12px;
-                    border-radius:8px;
+                    padding:14px;
+                    border-radius:10px;
                 ">
                     <h4 style="margin:0;">🅐 선택지 A</h4>
-                    <p style="margin-top:6px;">{scn.options['A']}</p>
+                    <p style="margin-top:8px;">{scn.options['A']}</p>
                 </div>
                 """,
                 unsafe_allow_html=True
             )
 
-    # 선택지 B
+    # 선택지 B 카드
     with cB:
         with st.container(border=True):
             st.markdown(
                 f"""
                 <div style="
                     background:white;
-                    padding:12px;
-                    border-radius:8px;
+                    padding:14px;
+                    border-radius:10px;
                 ">
                     <h4 style="margin:0;">🅑 선택지 B</h4>
-                    <p style="margin-top:6px;">{scn.options['B']}</p>
+                    <p style="margin-top:8px;">{scn.options['B']}</p>
                 </div>
                 """,
                 unsafe_allow_html=True
             )
 
-    st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
+    # ---------------- 현재 선택 표시 ----------------
     st.write(f"현재 선택: **{selected if selected else '선택 안됨'}**")
 
     # ---------------- 판단 버튼 ----------------
@@ -749,7 +758,7 @@ else:
         )
         m = computed["metrics"]
 
-        # LLM Narrative
+        # LLM Narrative or fallback
         try:
             if client:
                 nar = dna_narrative(client, scn, decision, m, weights)
@@ -807,7 +816,6 @@ else:
             st.session_state.last_out = None
             st.session_state.round_idx += 1
             st.rerun()
-
 
 # ==================== Footer / Downloads ====================
 st.markdown("---")
