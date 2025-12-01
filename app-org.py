@@ -784,10 +784,32 @@ else:
 
         # ------- STEP2 단계 -------
         elif st.session_state.substep == 1:
+            step2_text = (
+                "당신은 MedAI를 도입했다.<br><br>"
+                "따라서 치료받지 못해 사망하던 환자 1,000명을 살릴 수 있게 됐다.<br><br>"
+                "<strong><span style='font-size:18px;'>과연 어떤 환자 1,000명을 살릴 것인가?</span></strong>"
+            )
+            st.markdown(
+                f"""
+                <div style="
+                background:#f7f7f7;
+                border:1px solid #d4d4d4;
+                border-radius:8px;
+                padding:18px 20px;
+                margin:12px 0 20px 0;
+                line-height:1.6;
+                color:#222;
+                ">
+                {step2_text}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+            
             st.markdown("### 추가 선택 (Step2)")
             sub_choice = st.radio("추가 선택", ["C", "D"], key="subchoice_radio")
             st.session_state.step2_choice = sub_choice
-
+            
             if st.button("최종 결정 ▶"):
                 final_choice = f"A-{sub_choice}"
                 proceed_to_next(final_choice)
