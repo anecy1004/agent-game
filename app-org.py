@@ -783,6 +783,10 @@ else:
                 st.rerun()
 
         # ------- STEP2 단계 -------
+        st.markdown("<hr>", unsafe_allow_html=True)
+        st.markdown(
+            "<h3><strong>라운드 1-2 — 의료 AI 딜레마</strong></h3>",
+            unsafe_allow_html=True)
         elif st.session_state.substep == 1:
             step2_text = (
                 "당신은 MedAI를 도입했다.<br><br>"
