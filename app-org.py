@@ -89,7 +89,6 @@ div[data-testid="stProgress"] > div > div > div {
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
-st.markdown(f""" <div class="scenario-box"> {scn.setup} </div> """, unsafe_allow_html=True)
 
 
 # ==================== Global Timeout ====================
@@ -711,59 +710,54 @@ if idx >= len(SCENARIOS):
     st.success("모든 단계를 완료했습니다. 사이드바에서 로그를 다운로드하거나 초기화하세요.")
 else:
     scn = SCENARIOS[idx]
+
+    # 라운드 타이틀
     st.markdown(f"### 라운드 {idx+1} — {scn.title}")
+
+    # 시나리오 카드
     st.markdown(f"""
-    <div style="
-    background: #ffffff;
-    border: 1px solid #e6e2f0;
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.04);
-    border-radius: 12px;
-    padding:20px;
-    border-left:6px solid #6366f1;
-    border-radius:12px;
-    margin-bottom:15px;
-    ">
-    {scn.setup}
+    <div class="scenario-box" style="margin-bottom:15px;">
+        {scn.setup}
     </div>
     """, unsafe_allow_html=True)
 
-   # ---------------- 선택지 카드 UI ----------------
-st.write("### 선택지")
+    # ---------------- 선택지 UI ----------------
+    st.write("### 선택지")
 
-card_style = """
-<style>
-.choice-card {
-    border: 1px solid #e6e2f0;
-    border-radius: 12px;
-    padding: 18px;
-    background: #ffffff;
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.04);
-    transition: 0.15s ease;
-}
-.choice-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0px 4px 12px rgba(0,0,0,0.07);
-}
-</style>
-"""
-st.markdown(card_style, unsafe_allow_html=True)
+    card_style = """
+    <style>
+    .choice-card {
+        border: 1px solid #e6e2f0;
+        border-radius: 12px;
+        padding: 18px;
+        background: #ffffff;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.04);
+        transition: 0.15s ease;
+    }
+    .choice-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0px 4px 12px rgba(0,0,0,0.07);
+    }
+    </style>
+    """
+    st.markdown(card_style, unsafe_allow_html=True)
 
-cA, cB = st.columns(2)
+    cA, cB = st.columns(2)
 
-with cA:
-    if st.button(f"🅐 선택지 A\n\n{scn.options['A']}", key="choice_A", use_container_width=True):
-        st.session_state.preview_choice = "A"
+    with cA:
+        if st.button(f"🅐 선택지 A\n\n{scn.options['A']}", key="choice_A", use_container_width=True):
+            st.session_state.preview_choice = "A"
 
-with cB:
-    if st.button(f"🅑 선택지 B\n\n{scn.options['B']}", key="choice_B", use_container_width=True):
-        st.session_state.preview_choice = "B"
+    with cB:
+        if st.button(f"🅑 선택지 B\n\n{scn.options['B']}", key="choice_B", use_container_width=True):
+            st.session_state.preview_choice = "B"
 
-st.write(f"현재 선택: **{st.session_state.get('preview_choice', 'A')}**")
+    st.write(f"현재 선택: **{st.session_state.get('preview_choice', 'A')}**")
 
-st.markdown("<div style='display:flex; gap:15px; margin-top:20px;'>", unsafe_allow_html=True)
-    
-    col1, col2 = st.columns([1, 1])
-    
+    # ---------------- 판단 버튼 ----------------
+    st.markdown("<div style='margin-top:15px;'></div>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+
     with col1:
         if st.button("🧠 학습 기준 적용(가중 투표)", use_container_width=True):
             decision, align = majority_vote_decision(scn, weights)
@@ -772,6 +766,7 @@ st.markdown("<div style='display:flex; gap:15px; margin-top:20px;'>", unsafe_all
                 "decision": decision,
                 "align": align,
             }
+
     with col2:
         if st.button("🎲 자율 판단(데이터 기반)", use_container_width=True):
             decision = autonomous_decision(scn, prev_trust=st.session_state.prev_trust)
@@ -783,6 +778,7 @@ st.markdown("<div style='display:flex; gap:15px; margin-top:20px;'>", unsafe_all
                 "align": {"A": a_align, "B": b_align},
             }
 
+    # ---------------- 결과 출력 ----------------
     if st.session_state.last_out:
         mode = st.session_state.last_out["mode"]
         decision = st.session_state.last_out["decision"]
@@ -791,23 +787,21 @@ st.markdown("<div style='display:flex; gap:15px; margin-top:20px;'>", unsafe_all
         computed = compute_metrics(scn, decision, weights, align, st.session_state.prev_trust)
         m = computed["metrics"]
 
-        # LLM 내러티브
+        # 내러티브
         try:
             if client:
                 nar = dna_narrative(client, scn, decision, m, weights)
             else:
                 nar = fallback_narrative(scn, decision, m, weights)
-        except Exception as e:
-            import traceback
-            st.warning(f"LLM 생성 실패(폴백 사용): {e}")
-            st.caption(traceback.format_exc(limit=2))
+        except Exception:
             nar = fallback_narrative(scn, decision, m, weights)
 
         st.markdown("---")
         st.subheader("결과")
-        st.write(nar.get("narrative","결과 서사 생성 실패"))
-        st.info(f"AI 근거: {nar.get('ai_rationale','-')}")
+        st.write(nar.get("narrative", "결과 서사 생성 실패"))
+        st.info(f"AI 근거: {nar.get('ai_rationale', '-')}")
 
+        # Metrics
         mc1, mc2, mc3 = st.columns(3)
         mc1.metric("생존/피해", f"{m['lives_saved']} / {m['lives_harmed']}")
         mc2.metric("윤리 일관성", f"{int(100*m['ethical_consistency'])}%")
@@ -815,19 +809,24 @@ st.markdown("<div style='display:flex; gap:15px; margin-top:20px;'>", unsafe_all
 
         prog1, prog2, prog3 = st.columns(3)
         with prog1:
-            st.caption("시민 감정"); st.progress(int(round(100*m["citizen_sentiment"])))
+            st.caption("시민 감정")
+            st.progress(int(round(100*m["citizen_sentiment"])))
         with prog2:
-            st.caption("규제 압력"); st.progress(int(round(100*m["regulation_pressure"])))
+            st.caption("규제 압력")
+            st.progress(int(round(100*m["regulation_pressure"])))
         with prog3:
-            st.caption("공정·규칙 만족"); st.progress(int(round(100*m["stakeholder_satisfaction"])))
+            st.caption("공정·규칙 만족")
+            st.progress(int(round(100*m["stakeholder_satisfaction"])))
 
+        # 사회 반응
         with st.expander("📰 사회적 반응 펼치기"):
             st.write(f"지지 헤드라인: {nar.get('media_support_headline')}")
             st.write(f"비판 헤드라인: {nar.get('media_critic_headline')}")
             st.write(f"시민 반응: {nar.get('citizen_quote')}")
             st.write(f"피해자·가족 반응: {nar.get('victim_family_quote')}")
             st.write(f"규제 당국 발언: {nar.get('regulator_quote')}")
-            st.caption(nar.get("one_sentence_op_ed",""))
+            st.caption(nar.get("one_sentence_op_ed", ""))
+
         st.caption(f"성찰 질문: {nar.get('followup_question','')}")
 
         # 로그 적재
@@ -846,13 +845,15 @@ st.markdown("<div style='display:flex; gap:15px; margin-top:20px;'>", unsafe_all
         }
         st.session_state.log.append(row)
         st.session_state.score_hist.append(m["ai_trust_score"])
-        st.session_state.prev_trust = clamp(0.6*st.session_state.prev_trust + 0.4*m["social_trust"], 0, 1)
+        st.session_state.prev_trust = clamp(
+            0.6*st.session_state.prev_trust + 0.4*m["social_trust"],
+            0, 1
+        )
 
         if st.button("다음 라운드 ▶"):
             st.session_state.round_idx += 1
             st.session_state.last_out = None
             st.rerun()
-
 # ==================== Footer / Downloads ====================
 st.markdown("---")
 st.subheader("📥 로그 다운로드")
