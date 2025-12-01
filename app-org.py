@@ -610,16 +610,16 @@ st.markdown(
     """
     <div style="
         background: linear-gradient(90deg, #fff5f5, #ffffff);
-        padding: 24px 28px;
-        border-radius: 14px;
+        padding: 40px 34px;  /* ⬅ 패딩을 더 크게 */
+        border-radius: 18px;
         border: 1px solid #ffe3e3;
-        margin-bottom: 20px;
-        box-shadow: 0px 4px 10px rgba(255, 150, 150, 0.15);
+        margin-bottom: 32px;
+        box-shadow: 0px 5px 14px rgba(255, 150, 150, 0.18);
     ">
-        <h1 style="margin:0; color:#b91c1c; font-weight:800; font-size:40px;">
+        <h1 style="margin:0; color:#b91c1c; font-weight:800; font-size:44px;">
             인공지능 경영 1조
         </h1>
-        <p style="margin:8px 0 0 0; font-size:17px; color:#7f1d1d;">
+        <p style="margin:12px 0 0 0; font-size:19px; color:#7f1d1d;">
             북미 문화권 시나리오
         </p>
     </div>
@@ -649,34 +649,48 @@ else:
     st.markdown(f"### 라운드 {idx+1} — {scn.title}")
     st.write(scn.setup)
 
-    # 선택 상태
-    selected = st.session_state.get("preview_choice", None)
-
     st.write("### 선택지")
+
+    # 현재 선택 상태
+    selected = st.session_state.get("preview_choice", None)
 
     cA, cB = st.columns(2)
 
-    # 선택지 A 카드
+    # ===================== 선택지 A =====================
     with cA:
-        is_selected = (selected == "A")
-        st.container(border=True).markdown(
-            f"#### 🅐 선택지 A\n\n{scn.options['A']}"
-        )
+        # 버튼을 카드 위로 올림
         if st.button("A 선택", key="pickA", use_container_width=True):
             st.session_state.preview_choice = "A"
+            selected = "A"
 
-    # 선택지 B 카드
+        # 동그라미 라디오 스타일
+        circle = "●" if selected == "A" else "○"
+
+        # 카드 강조 색: 선택되면 빨간 계열로 강조
+        highlight = 0.90 if selected == "A" else 1.00
+
+        with st.container(border=True):
+            st.markdown(
+                f"#### {circle} 🅐 선택지 A\n\n{scn.options['A']}"
+            )
+
+    # ===================== 선택지 B =====================
     with cB:
-        is_selected = (selected == "B")
-        st.container(border=True).markdown(
-            f"#### 🅑 선택지 B\n\n{scn.options['B']}"
-        )
         if st.button("B 선택", key="pickB", use_container_width=True):
             st.session_state.preview_choice = "B"
+            selected = "B"
 
-    st.write(f"현재 선택: **{st.session_state.get('preview_choice', '선택 안됨')}**")
+        circle = "●" if selected == "B" else "○"
+        highlight = 0.90 if selected == "B" else 1.00
 
-    # 판단 버튼
+        with st.container(border=True):
+            st.markdown(
+                f"#### {circle} 🅑 선택지 B\n\n{scn.options['B']}"
+            )
+
+    st.write(f"현재 선택: **{selected if selected else '선택 안됨'}**")
+
+    # ===================== 판단 버튼 =====================
     c1, c2 = st.columns(2)
     with c1:
         if st.button("🧠 학습 기준 적용(가중 투표)"):
@@ -694,7 +708,7 @@ else:
                 "align": {"A": a_align, "B": b_align}
             }
 
-    # 결과
+    # ===================== 결과 출력 =====================
     if st.session_state.last_out:
         mode = st.session_state.last_out["mode"]
         decision = st.session_state.last_out["decision"]
