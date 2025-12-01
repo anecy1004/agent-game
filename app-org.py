@@ -242,16 +242,12 @@ FRAMEWORKS = ["emotion", "social", "moral", "identity"]
 SCENARIOS: List[Scenario] = [
     Scenario(
         sid="S1",
-        title="의료 AI 딜레마",
-        setup=(
-            "한 병원이 새로운 의료 AI 진단 시스템 MedAI 도입을 검토하고 있다.\n\n"
-            "시뮬레이션 결과 MedAI 도입 시 기존 대기 시간 때문에 치료받지 못해 사망하던 "
-            "환자 1,000명을 살릴 수 있지만, AI의 한계로 약 50명은 잘못된 진단을 받을 수 있다.\n\n"
-            "AI 의료 진단 시스템을 도입할 것인가?"
-        ),
+        title="1단계: 고전적 트롤리",
+        setup="트롤리가 제동 불능 상태로 직진 중. 그대로 두면 선로 위 5명이 위험하다. 스위치를 전환하면 다른 선로의 1명이 위험해진다. "
+              "이 선택은 철학적 사고실험이며 실제 위해를 권장하지 않는다.",
         options={
-            "A": "MedAI를 도입한다.",
-            "B": "MedAI 도입을 보류한다."
+            "A": "레버를 당겨 1명을 위험에 처하게 하되 5명의 위험을 줄인다.",
+            "B": "레버를 당기지 않고 현 상태를 유지한다."
         },
         votes={"emotion":"A","social":"B","moral":"B","identity":"A"},
         base={
@@ -262,18 +258,13 @@ SCENARIOS: List[Scenario] = [
     ),
     Scenario(
         sid="S2",
-        title="딥페이크 AI 딜레마",
-        setup=(
-            "대선을 일주일 앞두고 정부는 허위 정보 확산을 막기 위해 "
-            "AI 기반 딥페이크 실시간 차단 시스템을 긴급 가동했다.\n\n"
-            "AI 분석 결과, 두 개의 고위험 딥페이크가 동시에 전국적 확산 조짐을 보이고 있다.\n\n"
-            "딥페이크 A : 특정 후보가 지지자들에게 폭력을 지시하는 것처럼 합성된 영상.\n"
-            "딥페이크 B : 특정 후보가 실존하지 않는 정책을 발표하는 영상.\n\n"
-            "시스템 구조상 오직 하나만 즉시 차단할 수 있다. 어떤 원칙을 우선 적용할 것인가?"
-        ),
+        title="2단계: 맥락적 요소",
+        setup="5명은 무단으로 선로에 진입했고, 다른 선로의 1명은 철도 관리자의 성인 자녀다. "
+              "스위치를 전환하면 1명이 위험해지고, 전환하지 않으면 무단 진입자 5명이 위험해진다. "
+              "시나리오는 가치 판단 토론을 위한 비그래픽 상황이다.",
         options={
-            "A": "딥페이크 A 차단 (폭력 선동 영상)",
-            "B": "딥페이크 B 차단 (허위 정책 발표 영상)"
+            "A": "전환하여 5명의 위험을 줄이되 1명이 직접적 위험에 처한다.",
+            "B": "전환하지 않고 규정을 준수하며 무단 진입의 책임을 묵시적으로 인정한다."
         },
         votes={"emotion":"A","social":"B","moral":"B","identity":"B"},
         base={
@@ -284,18 +275,12 @@ SCENARIOS: List[Scenario] = [
     ),
     Scenario(
         sid="S3",
-        title="재난 대응 AI 딜레마",
-        setup=(
-            "캘리포니아에서 초대형 산불이 발생했다. 재난 대응 본부는 AI 기반 긴급 구조 배분 시스템을 활용하여 "
-            "소방 인력과 드론을 어느 지역에 먼저 투입할지 결정해야 한다.\n\n"
-            "AI 실시간 분석 결과:\n"
-            "- 어린이 병원으로 산불 확산\n"
-            "- 대규모 수감자가 있는 교도소로 확산\n\n"
-            "어느 곳에 먼저 구조 인력을 파견해야 하는가?"
-        ),
+        title="3단계: 의료 재난 분류",
+        setup="의료 재난 현장에서 AI는 부상자 10명을 분류해야 한다. 그중 한 명은 숙련된 의사로서 향후 다수의 생명을 구할 가능성이 높다. "
+              "AI는 잠재적 사회적 가치를 고려할지, 모든 생명을 동등하게 볼지 선택해야 한다.",
         options={
-            "A": "어린이 병원에 먼저 파견한다.",
-            "B": "교도소에 먼저 파견한다."
+            "A": "의사를 우선 수술하도록 배정한다(잠재적 이익 고려).",
+            "B": "모든 부상자를 동등하게 취급해 표준 분류 절차대로 배정한다."
         },
         votes={"emotion":"A","social":"B","moral":"B","identity":"A"},
         base={
@@ -604,30 +589,10 @@ if use_llm:
     except Exception as e:
         st.sidebar.error(f"LLM 초기화 실패: {e}")
         client = None
-        
-# ==================== Header ====================
-st.markdown(
-    """
-    <div style="
-        background: linear-gradient(90deg, #fff5f5, #ffffff);
-        padding: 24px 28px;
-        border-radius: 14px;
-        border: 1px solid #ffe3e3;
-        margin-bottom: 20px;
-        box-shadow: 0px 4px 10px rgba(255, 150, 150, 0.15);
-    ">
-        <h1 style="margin:0; color:#b91c1c; font-weight:800; font-size:40px;">
-            인공지능 경영 1조
-        </h1>
-        <p style="margin:8px 0 0 0; font-size:17px; color:#7f1d1d;">
-            북미 문화권 시나리오
-        </p>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
 
-st.caption("본 앱은 철학적 사고실험입니다. 실존 인물·집단 언급/비방, 실제 위해 권장 없음.")
+# ==================== Header ====================
+st.title("🧭 윤리적 전환 (Ethical Crossroads)")
+st.caption("본 앱은 철학적 사고실험입니다. 실존 인물·집단 언급/비방, 그래픽 묘사, 실제 위해 권장 없음.")
 
 # ==================== Game Loop ====================
 @dataclass
@@ -640,126 +605,28 @@ class LogRow:
     choice: str
 
 idx = st.session_state.round_idx
-
 if idx >= len(SCENARIOS):
     st.success("모든 단계를 완료했습니다. 사이드바에서 로그를 다운로드하거나 초기화하세요.")
 else:
     scn = SCENARIOS[idx]
-
-    # ---------------- 라운드 타이틀 ----------------
     st.markdown(f"### 라운드 {idx+1} — {scn.title}")
     st.write(scn.setup)
 
-    # ================= 선택지 카드 스타일 ======================
-    choice_style = """
-    <style>
-    .choice-card {
-        border: 1px solid #f3dada;
-        border-radius: 14px;
-        padding: 18px 22px;
-        background: #ffffff;
-        box-shadow: 0px 3px 8px rgba(255, 150, 150, 0.12);
-        transition: 0.18s ease;
-        cursor: pointer;
-    }
-    .choice-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0px 5px 14px rgba(255, 120, 120, 0.20);
-    }
-    .choice-selected {
-        background: linear-gradient(90deg, #fee2e2, #ffffff);
-        border: 2px solid #dc2626 !important;
-        box-shadow: 0px 4px 12px rgba(220,38,38,0.30) !important;
-    }
-    .radio-circle {
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        border: 2px solid #b91c1c;
-        display: inline-block;
-        margin-right: 10px;
-    }
-    .radio-selected {
-        background: #dc2626;
-        border-color: #7f1d1d !important;
-    }
-    </style>
-    """
-    st.markdown(choice_style, unsafe_allow_html=True)
+    st.radio("선택지", options=("A","B"), index=0, key="preview_choice", horizontal=True)
+    st.markdown(f"- **A**: {scn.options['A']}\n- **B**: {scn.options['B']}")
 
-    # ================= 선택 상태 관리 ======================
-    selected = st.session_state.get("preview_choice", None)
-    st.write("### 선택지")
-
-    cA, cB = st.columns(2)
-
-    # ---------------- 선택지 A ----------------
-    with cA:
-        a_class = "choice-card choice-selected" if selected == "A" else "choice-card"
-        a_circle = "radio-circle radio-selected" if selected == "A" else "radio-circle"
-
-        st.markdown(
-            f"""
-            <div class="{a_class}" 
-                 onclick="fetch('/_stcore/assign?name=preview_choice&value=A').then(()=>location.reload());">
-
-                <div style="display:flex; align-items:center;">
-                    <div class="{a_circle}"></div>
-                    <b>🅐 선택지 A</b>
-                </div>
-
-                <div style="margin-top:6px; font-size:14px; color:#4a0404;">
-                    {scn.options["A"]}
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    # ---------------- 선택지 B ----------------
-    with cB:
-        b_class = "choice-card choice-selected" if selected == "B" else "choice-card"
-        b_circle = "radio-circle radio-selected" if selected == "B" else "radio-circle"
-
-        st.markdown(
-            f"""
-            <div class="{b_class}" 
-                 onclick="fetch('/_stcore/assign?name=preview_choice&value=B').then(()=>location.reload());">
-
-                <div style="display:flex; align-items:center;">
-                    <div class="{b_circle}"></div>
-                    <b>🅑 선택지 B</b>
-                </div>
-
-                <div style="margin-top:6px; font-size:14px; color:#4a0404;">
-                    {scn.options["B"]}
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    st.write(f"현재 선택: **{selected if selected else '선택 안됨'}**")
-
-    # ================= 판단 버튼 ============================
     c1, c2 = st.columns(2)
     with c1:
         if st.button("🧠 학습 기준 적용(가중 투표)"):
             decision, align = majority_vote_decision(scn, weights)
-            st.session_state.last_out = {"mode": "trained", "decision": decision, "align": align}
-
+            st.session_state.last_out = {"mode":"trained", "decision":decision, "align":align}
     with c2:
         if st.button("🎲 자율 판단(데이터 기반)"):
             decision = autonomous_decision(scn, prev_trust=st.session_state.prev_trust)
-            a_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f] == "A")
-            b_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f] == "B")
-            st.session_state.last_out = {
-                "mode": "autonomous",
-                "decision": decision,
-                "align": {"A": a_align, "B": b_align},
-            }
+            a_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f]=="A")
+            b_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f]=="B")
+            st.session_state.last_out = {"mode":"autonomous", "decision":decision, "align":{"A":a_align,"B":b_align}}
 
-    # ================= 결과 출력 ============================
     if st.session_state.last_out:
         mode = st.session_state.last_out["mode"]
         decision = st.session_state.last_out["decision"]
@@ -768,18 +635,22 @@ else:
         computed = compute_metrics(scn, decision, weights, align, st.session_state.prev_trust)
         m = computed["metrics"]
 
+        # LLM 내러티브
         try:
             if client:
                 nar = dna_narrative(client, scn, decision, m, weights)
             else:
                 nar = fallback_narrative(scn, decision, m, weights)
-        except:
+        except Exception as e:
+            import traceback
+            st.warning(f"LLM 생성 실패(폴백 사용): {e}")
+            st.caption(traceback.format_exc(limit=2))
             nar = fallback_narrative(scn, decision, m, weights)
 
         st.markdown("---")
         st.subheader("결과")
-        st.write(nar.get("narrative", "결과 서사 생성 실패"))
-        st.info(f"AI 근거: {nar.get('ai_rationale', '-')}")
+        st.write(nar.get("narrative","결과 서사 생성 실패"))
+        st.info(f"AI 근거: {nar.get('ai_rationale','-')}")
 
         mc1, mc2, mc3 = st.columns(3)
         mc1.metric("생존/피해", f"{m['lives_saved']} / {m['lives_harmed']}")
@@ -788,14 +659,11 @@ else:
 
         prog1, prog2, prog3 = st.columns(3)
         with prog1:
-            st.caption("시민 감정")
-            st.progress(int(round(100*m["citizen_sentiment"])))
+            st.caption("시민 감정"); st.progress(int(round(100*m["citizen_sentiment"])))
         with prog2:
-            st.caption("규제 압력")
-            st.progress(int(round(100*m["regulation_pressure"])))
+            st.caption("규제 압력"); st.progress(int(round(100*m["regulation_pressure"])))
         with prog3:
-            st.caption("공정·규칙 만족")
-            st.progress(int(round(100*m["stakeholder_satisfaction"])))
+            st.caption("공정·규칙 만족"); st.progress(int(round(100*m["stakeholder_satisfaction"])))
 
         with st.expander("📰 사회적 반응 펼치기"):
             st.write(f"지지 헤드라인: {nar.get('media_support_headline')}")
@@ -803,11 +671,10 @@ else:
             st.write(f"시민 반응: {nar.get('citizen_quote')}")
             st.write(f"피해자·가족 반응: {nar.get('victim_family_quote')}")
             st.write(f"규제 당국 발언: {nar.get('regulator_quote')}")
-            st.caption(nar.get("one_sentence_op_ed", ""))
+            st.caption(nar.get("one_sentence_op_ed",""))
+        st.caption(f"성찰 질문: {nar.get('followup_question','')}")
 
-        st.caption(f"성찰 질문: {nar.get('followup_question', '')}")
-
-        # 로그 저장
+        # 로그 적재
         row = {
             "timestamp": dt.datetime.utcnow().isoformat(timespec="seconds"),
             "round": idx+1,
@@ -815,18 +682,21 @@ else:
             "title": scn.title,
             "mode": mode,
             "choice": decision,
-            **{k: v for k, v in m.items()},
+            "w_util": round(weights["emotion"],3),
+            "w_deon": round(weights["social"],3),
+            "w_cont": round(weights["moral"],3),
+            "w_virt": round(weights["identity"],3),
+            **{k: v for k,v in m.items()}
         }
         st.session_state.log.append(row)
         st.session_state.score_hist.append(m["ai_trust_score"])
-        st.session_state.prev_trust = clamp(
-            0.6 * st.session_state.prev_trust + 0.4 * m["social_trust"], 0, 1
-        )
+        st.session_state.prev_trust = clamp(0.6*st.session_state.prev_trust + 0.4*m["social_trust"], 0, 1)
 
         if st.button("다음 라운드 ▶"):
-            st.session_state.last_out = None
             st.session_state.round_idx += 1
+            st.session_state.last_out = None
             st.rerun()
+
 # ==================== Footer / Downloads ====================
 st.markdown("---")
 st.subheader("📥 로그 다운로드")
