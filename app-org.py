@@ -683,8 +683,18 @@ if use_llm:
         client = None
 
 # ==================== Header ====================
-st.title("🧭 인공지능 A조 (Ethical Crossroads)")
-st.caption("본 앱은 철학적 사고실험입니다. 실존 인물·집단 언급/비방, 그래픽 묘사, 실제 위해 권장 없음.")
+st.markdown("""
+<div style="
+    background:linear-gradient(90deg, #faf5ff, #ffffff);
+    padding:25px 20px;
+    border-radius:12px;
+    margin-bottom:15px;
+    text-align:center;
+">
+    <h2 style="margin-bottom:0;">🧭 인공지능 A조 (Ethical Crossroads)</h2>
+    <p style="margin-top:8px; color:#555;">본 앱은 철학적 사고실험입니다. 실존 인물·집단 언급/비방, 실제 위해 권장 없음.</p>
+</div>
+""", unsafe_allow_html=True)
 
 # ==================== Game Loop ====================
 @dataclass
@@ -717,8 +727,40 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-    st.radio("선택지", options=("A","B"), index=0, key="preview_choice", horizontal=True)
-    st.markdown(f"- **A**: {scn.options['A']}\n- **B**: {scn.options['B']}")
+   # ---------------- 선택지 카드 UI ----------------
+
+st.write("### 선택지")
+
+card_style = """
+<style>
+.choice-card {
+    border: 1px solid #e6e2f0;
+    border-radius: 12px;
+    padding: 18px;
+    background: #ffffff;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.04);
+    transition: 0.15s ease;
+}
+.choice-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.07);
+}
+</style>
+"""
+st.markdown(card_style, unsafe_allow_html=True)
+
+cA, cB = st.columns(2)
+
+with cA:
+    if st.button(f"🅐 선택지 A\n\n{scn.options['A']}", key="choice_A", use_container_width=True):
+        st.session_state.preview_choice = "A"
+
+with cB:
+    if st.button(f"🅑 선택지 B\n\n{scn.options['B']}", key="choice_B", use_container_width=True):
+        st.session_state.preview_choice = "B"
+
+st.write(f"현재 선택: **{st.session_state.get('preview_choice', 'A')}**")
+
 
     st.markdown("<div style='display:flex; gap:15px; margin-top:20px;'>", unsafe_allow_html=True)
     
