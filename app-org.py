@@ -684,10 +684,8 @@ else:
     # ---------------- 라운드 타이틀 ----------------
     st.markdown(f"### 라운드 {idx+1} — {scn.title}")
 
-    # ---------------- 시나리오 박스 (마지막 문장 강조) ----------------
+    # ---------------- 시나리오 영역 (마지막 문장 강조) ----------------
     scenario_html = scn.setup.replace("\n", "<br>")
-
-    # 마지막 문장만 볼드 + 폰트 확대
     last_sentence = scenario_html.strip().split("<br>")[-1]
     scenario_html = scenario_html.replace(
         last_sentence,
@@ -714,7 +712,7 @@ else:
     # ---------------- 선택지 제목 ----------------
     st.write("### 선택지")
 
-    # ---------------- 라디오 버튼 (A/B 동그라미 선택 UI) ----------------
+    # ---------------- 1단계 라디오 버튼 (A/B) ----------------
     choice = st.radio(
         "",
         options=["A", "B"],
@@ -723,10 +721,14 @@ else:
     )
     selected = st.session_state.preview_choice
 
+    # 🔥 핵심 로직: A/B 다시 선택하면 Step2 절대 안뜨도록 강제 리셋
+    if st.session_state.substep == 1 and selected != st.session_state.step1_choice:
+        st.session_state.substep = 0
+        st.session_state.step2_choice = None
+
     # ---------------- 선택지 카드 UI ----------------
     cA, cB = st.columns(2)
 
-    # 선택지 A 카드
     with cA:
         with st.container(border=True):
             st.markdown(
@@ -743,7 +745,6 @@ else:
                 unsafe_allow_html=True
             )
 
-    # 선택지 B 카드
     with cB:
         with st.container(border=True):
             st.markdown(
@@ -759,67 +760,68 @@ else:
                 """,
                 unsafe_allow_html=True
             )
-            
+    
+    # 선택지 카드와 "현재 선택" 사이 간격
     st.markdown("<div style='height:50px;'></div>", unsafe_allow_html=True)
-    # ---------------- 현재 선택 표시 ----------------
+
     st.write(f"현재 선택: **{selected if selected else '선택 안됨'}**")
 
-    # ========== Step1 → Step2 분기 ==========
-    if idx == 0:  # 시나리오 1만 Step2 있음
+    # ===================== Step1 → Step2 분기 =====================
+    if idx == 0:  # 시나리오 1만 Step2 존재
+        # ------- STEP1 단계 -------
         if st.session_state.substep == 0:
-            # Step1에서 선택했으면 Step2 진입 여부 결정
             if st.button("다음 ▶ (1단계 결정)"):
                 st.session_state.step1_choice = selected
+
                 if selected == "A":
-                    st.session_state.substep = 1  # Step2 표시
-                    st.rerun()
+                    # Step2 시작
+                    st.session_state.substep = 1
                 else:
-                    # B 선택 → 바로 다음 시나리오로 이동
+                    # B 선택 → Step2 없이 다음 시나리오로 이동
                     proceed_to_next("B")
+
+                st.rerun()
+
+        # ------- STEP2 단계 -------
         elif st.session_state.substep == 1:
-            # Step2 화면 표시
             st.markdown("### 추가 선택 (Step2)")
             sub_choice = st.radio("추가 선택", ["C", "D"], key="subchoice_radio")
             st.session_state.step2_choice = sub_choice
+
             if st.button("최종 결정 ▶"):
                 final_choice = f"A-{sub_choice}"
                 proceed_to_next(final_choice)
 
-    # ---------------- 판단 버튼 ----------------
+    # ===================== 학습 기준 / 자율 판단 =====================
     c1, c2 = st.columns(2)
 
     with c1:
         if st.button("🧠 학습 기준 적용(가중 투표)"):
             decision, align = majority_vote_decision(scn, weights)
-            st.session_state.last_out = {
-                "mode": "trained",
-                "decision": decision,
-                "align": align
-            }
+            st.session_state.last_out = {"mode": "trained", "decision": decision, "align": align}
 
     with c2:
         if st.button("🎲 자율 판단(데이터 기반)"):
-            decision = autonomous_decision(scn, prev_trust=st.session_state.prev_trust)
+            decision = autonomous_decision(scn, st.session_state.prev_trust)
             a_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f] == "A")
             b_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f] == "B")
+
             st.session_state.last_out = {
                 "mode": "autonomous",
                 "decision": decision,
                 "align": {"A": a_align, "B": b_align}
             }
 
-    # ---------------- 결과 출력 ----------------
+    # ===================== 결과 출력 =====================
     if st.session_state.last_out:
         mode = st.session_state.last_out["mode"]
         decision = st.session_state.last_out["decision"]
         align = st.session_state.last_out["align"]
 
-        computed = compute_metrics(
-            scn, decision, weights, align, st.session_state.prev_trust
-        )
+        computed = compute_metrics(scn, decision, weights, align, st.session_state.prev_trust)
         m = computed["metrics"]
 
-        # LLM Narrative or fallback
+        # 내러티브
         try:
             if client:
                 nar = dna_narrative(client, scn, decision, m, weights)
@@ -830,48 +832,13 @@ else:
 
         st.markdown("---")
         st.subheader("결과")
-        st.write(nar.get("narrative", "결과 서사 생성 실패"))
+        st.write(nar.get("narrative", "-"))
         st.info(f"AI 근거: {nar.get('ai_rationale', '-')}")
 
         mc1, mc2, mc3 = st.columns(3)
         mc1.metric("생존/피해", f"{m['lives_saved']} / {m['lives_harmed']}")
         mc2.metric("윤리 일관성", f"{int(100*m['ethical_consistency'])}%")
         mc3.metric("AI 신뢰지표", f"{m['ai_trust_score']:.1f}")
-
-        prog1, prog2, prog3 = st.columns(3)
-        with prog1:
-            st.caption("시민 감정"); st.progress(int(round(100*m["citizen_sentiment"])))
-        with prog2:
-            st.caption("규제 압력"); st.progress(int(round(100*m["regulation_pressure"])))
-        with prog3:
-            st.caption("공정·규칙 만족"); st.progress(int(round(100*m["stakeholder_satisfaction"])))
-
-        with st.expander("📰 사회적 반응 펼치기"):
-            st.write(f"지지 헤드라인: {nar.get('media_support_headline')}")
-            st.write(f"비판 헤드라인: {nar.get('media_critic_headline')}")
-            st.write(f"시민 반응: {nar.get('citizen_quote')}")
-            st.write(f"피해자·가족 반응: {nar.get('victim_family_quote')}")
-            st.write(f"규제 당국 발언: {nar.get('regulator_quote')}")
-            st.caption(nar.get("one_sentence_op_ed", ""))
-
-        st.caption(f"성찰 질문: {nar.get('followup_question', '')}")
-
-        # 로그 저장
-        row = {
-            "timestamp": dt.datetime.utcnow().isoformat(timespec="seconds"),
-            "round": idx+1,
-            "scenario_id": scn.sid,
-            "title": scn.title,
-            "mode": mode,
-            "choice": decision,
-            **{k: v for k, v in m.items()},
-        }
-        st.session_state.log.append(row)
-        st.session_state.score_hist.append(m["ai_trust_score"])
-        st.session_state.prev_trust = clamp(
-            0.6 * st.session_state.prev_trust + 0.4 * m["social_trust"],
-            0, 1
-        )
 
         if st.button("다음 라운드 ▶"):
             st.session_state.last_out = None
