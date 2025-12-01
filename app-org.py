@@ -17,67 +17,79 @@ st.set_page_config(page_title="윤리적 전환 (Ethical Crossroads)", page_icon
 custom_css = """
 <style>
 
-/* 전체 폰트 & 컬러톤 */
+/* 전체 폰트 & 톤 */
 html, body, [class*="st-"] {
     font-family: 'Pretendard', sans-serif;
-    color: #222;
+    color: #2b2b2b;
 }
 
-/* 카드 스타일 */
+/* 전체 레이아웃 */
 .block-container {
     padding-top: 2rem;
     padding-bottom: 3rem;
-    border-radius: 12px;
 }
 
-/* 버튼 스타일 */
+/* --- 버튼 --- */
 .stButton > button {
-    background: linear-gradient(90deg, #4f46e5, #3b82f6);
-    color: white;
+    background: linear-gradient(90deg, #A78BFA, #C4B5FD);
+    color: #1f1f1f;
     border-radius: 10px;
     padding: 12px 20px;
-    border: none;
     font-weight: 600;
+    border: none;
     transition: 0.2s;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.05);
 }
 .stButton > button:hover {
     transform: translateY(-3px);
-    background: linear-gradient(90deg, #4338ca, #2563eb);
+    background: linear-gradient(90deg, #8B5CF6, #A78BFA);
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
 }
 
-/* 라디오 버튼 */
+/* --- 시나리오 카드 --- */
+.scenario-box {
+    background: #faf8ff;
+    padding: 20px;
+    border-left: 6px solid #B19CF3;
+    border-radius: 12px;
+}
+
+/* 라디오 */
 .stRadio > label {
     font-size: 1.1rem;
     font-weight: 600;
 }
-.st-at {
-    background-color: #eef2ff !important;
-    border-radius: 8px;
-    padding: 5px 10px;
-}
 
-/* Metric 박스 커스텀 */
+/* Metric */
 [data-testid="metric-container"] {
-    background: #f9fafb;
+    background: #ffffff;
     padding: 18px;
     border-radius: 12px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #e6e2f0;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.04);
 }
 
-/* Progress Bar 색상 */
+/* Progress bar */
 div[data-testid="stProgress"] > div > div > div {
-    background: #6366f1;
+    background: #B19CF3 !important;
 }
 
-/* Expander 스타일 */
+/* Expander */
 .streamlit-expanderHeader {
-    font-weight: 700;
-    font-size: 18px;
+    font-weight: 600;
+    font-size: 17px;
+    color: #4b4453;
+}
+
+/* Sidebar 배경 */
+[data-testid="stSidebar"] {
+    background: #f4f2fa;
 }
 
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
+st.markdown(f""" <div class="scenario-box"> {scn.setup} </div> """, unsafe_allow_html=True)
 
 
 # ==================== Global Timeout ====================
@@ -692,7 +704,10 @@ else:
     st.markdown(f"### 라운드 {idx+1} — {scn.title}")
     st.markdown(f"""
     <div style="
-    background:#f8faff;
+    background: #ffffff;
+    border: 1px solid #e6e2f0;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.04);
+    border-radius: 12px;
     padding:20px;
     border-left:6px solid #6366f1;
     border-radius:12px;
