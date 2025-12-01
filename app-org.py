@@ -609,7 +609,7 @@ if use_llm:
 st.markdown(
     """
     <div style="padding: 10px 0 0 0;">
-        <h1 style="margin:0; color:#b91c1c; font-weight:800; font-size:40px;">
+        <h1 style="margin:0; color:#000000; font-weight:800; font-size:40px;">
             인공지능 경영 1조
         </h1>
         <p style="margin:6px 0 0 0; font-size:17px; color:#7f1d1d;">
@@ -621,6 +621,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 st.caption("본 앱은 철학적 사고실험입니다. 실존 인물·집단 언급/비방, 실제 위해 권장 없음.")
 
@@ -643,7 +644,22 @@ else:
 
     # 라운드 타이틀
     st.markdown(f"### 라운드 {idx+1} — {scn.title}")
-    st.write(scn.setup)
+    st.markdown(
+        f"""
+        <div style="
+        background:#f7f7f7;
+        border:1px solid #d4d4d4;
+        border-radius:8px;
+        padding:18px 20px;
+        margin:12px 0 20px 0;
+        line-height:1.6;
+        color:#222;
+        ">
+        {scn.setup.replace('\n', '<br>')}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     # ------------------------ 선택 UI ------------------------
     st.write("### 선택지")
