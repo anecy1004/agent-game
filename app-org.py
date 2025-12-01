@@ -766,20 +766,19 @@ else:
 
     # ========== Step1 → Step2 분기 ==========
     if idx == 0:  # 시나리오 1에서만 Step2 존재
-        # Step2 진입 여부 판단
+        # 아직 Step1이라면
         if st.session_state.substep == 0:
-            # Step1 선택 버튼
             if st.button("다음 ▶ (1단계 결정)"):
                 st.session_state.step1_choice = selected
 
             if selected == "A":
                 # Step2로 진입
                 st.session_state.substep = 1
-            else:
-                # B 선택 → 바로 다음 시나리오로 이동
-                proceed_to_next("B")
+                st.rerun()
 
-            st.rerun()
+            else:
+                # B 선택 → 바로 다음 라운드로
+                proceed_to_next("B")
         elif st.session_state.substep == 1:
             st.markdown("### 추가 선택 (Step2)")
             sub_choice = st.radio("추가 선택", ["C", "D"], key="subchoice_radio")
