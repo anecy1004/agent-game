@@ -690,7 +690,17 @@ if idx >= len(SCENARIOS):
 else:
     scn = SCENARIOS[idx]
     st.markdown(f"### 라운드 {idx+1} — {scn.title}")
-    st.write(scn.setup)
+    st.markdown(f"""
+    <div style="
+    background:#f8faff;
+    padding:20px;
+    border-left:6px solid #6366f1;
+    border-radius:12px;
+    margin-bottom:15px;
+    ">
+    {scn.setup}
+    </div>
+    """, unsafe_allow_html=True)
 
     st.radio("선택지", options=("A","B"), index=0, key="preview_choice", horizontal=True)
     st.markdown(f"- **A**: {scn.options['A']}\n- **B**: {scn.options['B']}")
