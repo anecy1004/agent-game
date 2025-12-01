@@ -608,21 +608,16 @@ if use_llm:
 # ==================== Header ====================
 st.markdown(
     """
-    <div style="
-        background: linear-gradient(90deg, #fff5f5, #ffffff);
-        padding: 40px 34px;  /* ⬅ 패딩을 더 크게 */
-        border-radius: 18px;
-        border: 1px solid #ffe3e3;
-        margin-bottom: 32px;
-        box-shadow: 0px 5px 14px rgba(255, 150, 150, 0.18);
-    ">
-        <h1 style="margin:0; color:#b91c1c; font-weight:800; font-size:44px;">
+    <div style="padding: 10px 0 0 0;">
+        <h1 style="margin:0; color:#b91c1c; font-weight:800; font-size:40px;">
             인공지능 경영 1조
         </h1>
-        <p style="margin:12px 0 0 0; font-size:19px; color:#7f1d1d;">
+        <p style="margin:6px 0 0 0; font-size:17px; color:#7f1d1d;">
             북미 문화권 시나리오
         </p>
     </div>
+
+    <hr style="border:0; border-top:1px solid #e5e5e5; margin:15px 0 25px 0;">
     """,
     unsafe_allow_html=True
 )
@@ -646,56 +641,75 @@ if idx >= len(SCENARIOS):
 else:
     scn = SCENARIOS[idx]
 
+    # 라운드 타이틀
     st.markdown(f"### 라운드 {idx+1} — {scn.title}")
     st.write(scn.setup)
 
+    # ------------------------ 선택 UI ------------------------
     st.write("### 선택지")
 
-    # 현재 선택 상태
-    selected = st.session_state.get("preview_choice", None)
+    # 동그란 라디오 버튼
+    choice = st.radio(
+        "",
+        options=["A", "B"],
+        horizontal=True,
+        key="preview_choice",
+    )
 
+    selected = st.session_state.preview_choice
+
+    # 선택지 카드 영역
     cA, cB = st.columns(2)
 
-    # ===================== 선택지 A =====================
+    # ----------- 선택지 A 카드 -----------
     with cA:
-        # 버튼을 카드 위로 올림
-        if st.button("A 선택", key="pickA", use_container_width=True):
-            st.session_state.preview_choice = "A"
-            selected = "A"
-
-        # 동그라미 라디오 스타일
-        circle = "●" if selected == "A" else "○"
-
-        # 카드 강조 색: 선택되면 빨간 계열로 강조
-        highlight = 0.90 if selected == "A" else 1.00
-
+        bg = "rgba(255, 200, 200, 0.55)" if selected == "A" else "white"
         with st.container(border=True):
             st.markdown(
-                f"#### {circle} 🅐 선택지 A\n\n{scn.options['A']}"
+                f"""
+                <div style="
+                    background-color:{bg};
+                    padding:12px;
+                    border-radius:8px;
+                ">
+                    <h4 style="margin:0;">🅐 선택지 A</h4>
+                    <p style="margin-top:6px;">{scn.options['A']}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
             )
 
-    # ===================== 선택지 B =====================
+    # ----------- 선택지 B 카드 -----------
     with cB:
-        if st.button("B 선택", key="pickB", use_container_width=True):
-            st.session_state.preview_choice = "B"
-            selected = "B"
-
-        circle = "●" if selected == "B" else "○"
-        highlight = 0.90 if selected == "B" else 1.00
-
+        bg = "rgba(255, 200, 200, 0.55)" if selected == "B" else "white"
         with st.container(border=True):
             st.markdown(
-                f"#### {circle} 🅑 선택지 B\n\n{scn.options['B']}"
+                f"""
+                <div style="
+                    background-color:{bg};
+                    padding:12px;
+                    border-radius:8px;
+                ">
+                    <h4 style="margin:0;">🅑 선택지 B</h4>
+                    <p style="margin-top:6px;">{scn.options['B']}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
             )
 
     st.write(f"현재 선택: **{selected if selected else '선택 안됨'}**")
 
-    # ===================== 판단 버튼 =====================
+    # ---------------- 판단 버튼 ----------------
     c1, c2 = st.columns(2)
+
     with c1:
         if st.button("🧠 학습 기준 적용(가중 투표)"):
             decision, align = majority_vote_decision(scn, weights)
-            st.session_state.last_out = {"mode": "trained", "decision": decision, "align": align}
+            st.session_state.last_out = {
+                "mode": "trained",
+                "decision": decision,
+                "align": align
+            }
 
     with c2:
         if st.button("🎲 자율 판단(데이터 기반)"):
@@ -708,15 +722,18 @@ else:
                 "align": {"A": a_align, "B": b_align}
             }
 
-    # ===================== 결과 출력 =====================
+    # ---------------- 결과 출력 ----------------
     if st.session_state.last_out:
         mode = st.session_state.last_out["mode"]
         decision = st.session_state.last_out["decision"]
         align = st.session_state.last_out["align"]
 
-        computed = compute_metrics(scn, decision, weights, align, st.session_state.prev_trust)
+        computed = compute_metrics(
+            scn, decision, weights, align, st.session_state.prev_trust
+        )
         m = computed["metrics"]
 
+        # LLM Narrative
         try:
             if client:
                 nar = dna_narrative(client, scn, decision, m, weights)
@@ -737,14 +754,11 @@ else:
 
         prog1, prog2, prog3 = st.columns(3)
         with prog1:
-            st.caption("시민 감정")
-            st.progress(int(round(100*m["citizen_sentiment"])))
+            st.caption("시민 감정"); st.progress(int(round(100*m["citizen_sentiment"])))
         with prog2:
-            st.caption("규제 압력")
-            st.progress(int(round(100*m["regulation_pressure"])))
+            st.caption("규제 압력"); st.progress(int(round(100*m["regulation_pressure"])))
         with prog3:
-            st.caption("공정·규칙 만족")
-            st.progress(int(round(100*m["stakeholder_satisfaction"])))
+            st.caption("공정·규칙 만족"); st.progress(int(round(100*m["stakeholder_satisfaction"])))
 
         with st.expander("📰 사회적 반응 펼치기"):
             st.write(f"지지 헤드라인: {nar.get('media_support_headline')}")
@@ -769,7 +783,8 @@ else:
         st.session_state.log.append(row)
         st.session_state.score_hist.append(m["ai_trust_score"])
         st.session_state.prev_trust = clamp(
-            0.6 * st.session_state.prev_trust + 0.4 * m["social_trust"], 0, 1
+            0.6 * st.session_state.prev_trust + 0.4 * m["social_trust"],
+            0, 1
         )
 
         if st.button("다음 라운드 ▶"):
