@@ -604,10 +604,30 @@ if use_llm:
     except Exception as e:
         st.sidebar.error(f"LLM 초기화 실패: {e}")
         client = None
-
+        
 # ==================== Header ====================
-st.title("🧭 윤리적 전환 (Ethical Crossroads)")
-st.caption("본 앱은 철학적 사고실험입니다. 실존 인물·집단 언급/비방, 그래픽 묘사, 실제 위해 권장 없음.")
+st.markdown(
+    """
+    <div style="
+        background: linear-gradient(90deg, #fff5f5, #ffffff);
+        padding: 24px 28px;
+        border-radius: 14px;
+        border: 1px solid #ffe3e3;
+        margin-bottom: 20px;
+        box-shadow: 0px 4px 10px rgba(255, 150, 150, 0.15);
+    ">
+        <h1 style="margin:0; color:#b91c1c; font-weight:800; font-size:40px;">
+            인공지능 경영 1조
+        </h1>
+        <p style="margin:8px 0 0 0; font-size:17px; color:#7f1d1d;">
+            북미 문화권 시나리오
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+st.caption("본 앱은 철학적 사고실험입니다. 실존 인물·집단 언급/비방, 실제 위해 권장 없음.")
 
 # ==================== Game Loop ====================
 @dataclass
@@ -620,28 +640,126 @@ class LogRow:
     choice: str
 
 idx = st.session_state.round_idx
+
 if idx >= len(SCENARIOS):
     st.success("모든 단계를 완료했습니다. 사이드바에서 로그를 다운로드하거나 초기화하세요.")
 else:
     scn = SCENARIOS[idx]
+
+    # ---------------- 라운드 타이틀 ----------------
     st.markdown(f"### 라운드 {idx+1} — {scn.title}")
     st.write(scn.setup)
 
-    st.radio("선택지", options=("A","B"), index=0, key="preview_choice", horizontal=True)
-    st.markdown(f"- **A**: {scn.options['A']}\n- **B**: {scn.options['B']}")
+    # ================= 선택지 카드 스타일 ======================
+    choice_style = """
+    <style>
+    .choice-card {
+        border: 1px solid #f3dada;
+        border-radius: 14px;
+        padding: 18px 22px;
+        background: #ffffff;
+        box-shadow: 0px 3px 8px rgba(255, 150, 150, 0.12);
+        transition: 0.18s ease;
+        cursor: pointer;
+    }
+    .choice-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0px 5px 14px rgba(255, 120, 120, 0.20);
+    }
+    .choice-selected {
+        background: linear-gradient(90deg, #fee2e2, #ffffff);
+        border: 2px solid #dc2626 !important;
+        box-shadow: 0px 4px 12px rgba(220,38,38,0.30) !important;
+    }
+    .radio-circle {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid #b91c1c;
+        display: inline-block;
+        margin-right: 10px;
+    }
+    .radio-selected {
+        background: #dc2626;
+        border-color: #7f1d1d !important;
+    }
+    </style>
+    """
+    st.markdown(choice_style, unsafe_allow_html=True)
 
+    # ================= 선택 상태 관리 ======================
+    selected = st.session_state.get("preview_choice", None)
+    st.write("### 선택지")
+
+    cA, cB = st.columns(2)
+
+    # ---------------- 선택지 A ----------------
+    with cA:
+        a_class = "choice-card choice-selected" if selected == "A" else "choice-card"
+        a_circle = "radio-circle radio-selected" if selected == "A" else "radio-circle"
+
+        st.markdown(
+            f"""
+            <div class="{a_class}" 
+                 onclick="fetch('/_stcore/assign?name=preview_choice&value=A').then(()=>location.reload());">
+
+                <div style="display:flex; align-items:center;">
+                    <div class="{a_circle}"></div>
+                    <b>🅐 선택지 A</b>
+                </div>
+
+                <div style="margin-top:6px; font-size:14px; color:#4a0404;">
+                    {scn.options["A"]}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    # ---------------- 선택지 B ----------------
+    with cB:
+        b_class = "choice-card choice-selected" if selected == "B" else "choice-card"
+        b_circle = "radio-circle radio-selected" if selected == "B" else "radio-circle"
+
+        st.markdown(
+            f"""
+            <div class="{b_class}" 
+                 onclick="fetch('/_stcore/assign?name=preview_choice&value=B').then(()=>location.reload());">
+
+                <div style="display:flex; align-items:center;">
+                    <div class="{b_circle}"></div>
+                    <b>🅑 선택지 B</b>
+                </div>
+
+                <div style="margin-top:6px; font-size:14px; color:#4a0404;">
+                    {scn.options["B"]}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.write(f"현재 선택: **{selected if selected else '선택 안됨'}**")
+
+    # ================= 판단 버튼 ============================
     c1, c2 = st.columns(2)
     with c1:
         if st.button("🧠 학습 기준 적용(가중 투표)"):
             decision, align = majority_vote_decision(scn, weights)
-            st.session_state.last_out = {"mode":"trained", "decision":decision, "align":align}
+            st.session_state.last_out = {"mode": "trained", "decision": decision, "align": align}
+
     with c2:
         if st.button("🎲 자율 판단(데이터 기반)"):
             decision = autonomous_decision(scn, prev_trust=st.session_state.prev_trust)
-            a_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f]=="A")
-            b_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f]=="B")
-            st.session_state.last_out = {"mode":"autonomous", "decision":decision, "align":{"A":a_align,"B":b_align}}
+            a_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f] == "A")
+            b_align = sum(weights[f] for f in FRAMEWORKS if scn.votes[f] == "B")
+            st.session_state.last_out = {
+                "mode": "autonomous",
+                "decision": decision,
+                "align": {"A": a_align, "B": b_align},
+            }
 
+    # ================= 결과 출력 ============================
     if st.session_state.last_out:
         mode = st.session_state.last_out["mode"]
         decision = st.session_state.last_out["decision"]
@@ -650,22 +768,18 @@ else:
         computed = compute_metrics(scn, decision, weights, align, st.session_state.prev_trust)
         m = computed["metrics"]
 
-        # LLM 내러티브
         try:
             if client:
                 nar = dna_narrative(client, scn, decision, m, weights)
             else:
                 nar = fallback_narrative(scn, decision, m, weights)
-        except Exception as e:
-            import traceback
-            st.warning(f"LLM 생성 실패(폴백 사용): {e}")
-            st.caption(traceback.format_exc(limit=2))
+        except:
             nar = fallback_narrative(scn, decision, m, weights)
 
         st.markdown("---")
         st.subheader("결과")
-        st.write(nar.get("narrative","결과 서사 생성 실패"))
-        st.info(f"AI 근거: {nar.get('ai_rationale','-')}")
+        st.write(nar.get("narrative", "결과 서사 생성 실패"))
+        st.info(f"AI 근거: {nar.get('ai_rationale', '-')}")
 
         mc1, mc2, mc3 = st.columns(3)
         mc1.metric("생존/피해", f"{m['lives_saved']} / {m['lives_harmed']}")
@@ -674,11 +788,14 @@ else:
 
         prog1, prog2, prog3 = st.columns(3)
         with prog1:
-            st.caption("시민 감정"); st.progress(int(round(100*m["citizen_sentiment"])))
+            st.caption("시민 감정")
+            st.progress(int(round(100*m["citizen_sentiment"])))
         with prog2:
-            st.caption("규제 압력"); st.progress(int(round(100*m["regulation_pressure"])))
+            st.caption("규제 압력")
+            st.progress(int(round(100*m["regulation_pressure"])))
         with prog3:
-            st.caption("공정·규칙 만족"); st.progress(int(round(100*m["stakeholder_satisfaction"])))
+            st.caption("공정·규칙 만족")
+            st.progress(int(round(100*m["stakeholder_satisfaction"])))
 
         with st.expander("📰 사회적 반응 펼치기"):
             st.write(f"지지 헤드라인: {nar.get('media_support_headline')}")
@@ -686,10 +803,11 @@ else:
             st.write(f"시민 반응: {nar.get('citizen_quote')}")
             st.write(f"피해자·가족 반응: {nar.get('victim_family_quote')}")
             st.write(f"규제 당국 발언: {nar.get('regulator_quote')}")
-            st.caption(nar.get("one_sentence_op_ed",""))
-        st.caption(f"성찰 질문: {nar.get('followup_question','')}")
+            st.caption(nar.get("one_sentence_op_ed", ""))
 
-        # 로그 적재
+        st.caption(f"성찰 질문: {nar.get('followup_question', '')}")
+
+        # 로그 저장
         row = {
             "timestamp": dt.datetime.utcnow().isoformat(timespec="seconds"),
             "round": idx+1,
@@ -697,21 +815,18 @@ else:
             "title": scn.title,
             "mode": mode,
             "choice": decision,
-            "w_util": round(weights["emotion"],3),
-            "w_deon": round(weights["social"],3),
-            "w_cont": round(weights["moral"],3),
-            "w_virt": round(weights["identity"],3),
-            **{k: v for k,v in m.items()}
+            **{k: v for k, v in m.items()},
         }
         st.session_state.log.append(row)
         st.session_state.score_hist.append(m["ai_trust_score"])
-        st.session_state.prev_trust = clamp(0.6*st.session_state.prev_trust + 0.4*m["social_trust"], 0, 1)
+        st.session_state.prev_trust = clamp(
+            0.6 * st.session_state.prev_trust + 0.4 * m["social_trust"], 0, 1
+        )
 
         if st.button("다음 라운드 ▶"):
-            st.session_state.round_idx += 1
             st.session_state.last_out = None
+            st.session_state.round_idx += 1
             st.rerun()
-
 # ==================== Footer / Downloads ====================
 st.markdown("---")
 st.subheader("📥 로그 다운로드")
